@@ -59,29 +59,14 @@ h1 {
     margin: 2rem 0;
 }
 
-/* Tone down YAML frontmatter */
-.slop hr:first-child,
-.slop hr:first-of-type {
-    opacity: 0.3;
-}
-
-.slop hr:first-child ~ *,
-.slop hr:first-of-type ~ hr ~ * {
-    /* Content after frontmatter - normal styling */
-}
-
-.slop > *:first-child {
-    /* First element - if it's before first HR, it's frontmatter */
-    font-size: 0.75rem;
+/* Tone down YAML frontmatter - everything before first heading */
+.slop > p:first-of-type {
+    /* The frontmatter paragraph */
+    font-size: 0.7rem;
     color: var(--text-secondary);
-    opacity: 0.6;
-}
-
-.slop hr ~ hr ~ * {
-    /* Everything after second HR is normal content */
-    font-size: inherit;
-    color: inherit;
-    opacity: 1;
+    opacity: 0.5;
+    line-height: 1.4;
+    font-family: 'Courier New', monospace;
 }
 
 .slop h1 {
