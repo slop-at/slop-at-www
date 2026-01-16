@@ -75,7 +75,21 @@ def render_markdown(content: str) -> str:
         escape=False,
         plugins=['strikethrough', 'table', 'url', 'task_lists']
     )
-    return md(content)
+    html = md(content)
+
+    # Wrap frontmatter in a special div if it exists
+    if content.startswith("---"):
+        parts = content.split("---", 2)
+        if len(parts) >= 3:
+            frontmatter_text = parts[1].strip()
+            # Render frontmatter separately and wrap it
+            frontmatter_html = f'<div class="frontmatter"><pre>{frontmatter_text}</pre></div>'
+            # Remove frontmatter from main content and re-render
+            content_only = parts[2].strip()
+            content_html = md(content_only)
+            return frontmatter_html + content_html
+
+    return html
 
 
 @app.get("/")

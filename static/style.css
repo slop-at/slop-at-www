@@ -59,14 +59,23 @@ h1 {
     margin: 2rem 0;
 }
 
-/* Tone down YAML frontmatter - everything before first heading */
-.slop > p:first-of-type {
-    /* The frontmatter paragraph */
-    font-size: 0.7rem;
+/* Tone down YAML frontmatter */
+.frontmatter {
+    font-size: 0.65rem;
     color: var(--text-secondary);
-    opacity: 0.5;
-    line-height: 1.4;
+    opacity: 0.4;
+    margin-bottom: 2rem;
+    padding: 0.5rem 0;
+}
+
+.frontmatter pre {
+    margin: 0;
+    padding: 0;
+    background: none;
+    border: none;
     font-family: 'Courier New', monospace;
+    font-size: 0.65rem;
+    line-height: 1.3;
 }
 
 .slop h1 {
