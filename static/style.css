@@ -64,8 +64,8 @@ h1 {
     font-size: 0.65rem;
     color: var(--text-secondary);
     opacity: 0.4;
-    margin-bottom: 1rem;
-    padding: 0.5rem 0.75rem;
+    margin-bottom: 0.5rem;
+    padding: 0;
     background: #ffffff !important;
     border-bottom: 1px solid #e5e5e5;
 }
