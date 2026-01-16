@@ -6,7 +6,8 @@ set -e
 echo "🐐 Starting slop.at services..."
 
 # Data directory for Oxigraph
-OXIGRAPH_DATA="./data"
+SLOP_HOME="${SLOP_HOME:-$HOME/.slop-at}"
+OXIGRAPH_DATA="$SLOP_HOME/oxigraph"
 mkdir -p "$OXIGRAPH_DATA"
 
 # Check if Oxigraph is already running

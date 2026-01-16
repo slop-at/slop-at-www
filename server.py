@@ -14,8 +14,9 @@ import os
 
 # Configuration
 OXIGRAPH_URL = os.getenv("OXIGRAPH_URL", "http://localhost:7878")
-DATA_DIR = Path("./slops")
-DATA_DIR.mkdir(exist_ok=True)
+SLOP_HOME = Path(os.getenv("SLOP_HOME", Path.home() / ".slop-at"))
+DATA_DIR = SLOP_HOME / "slops"
+DATA_DIR.mkdir(parents=True, exist_ok=True)
 
 app = FastAPI(title="slop.at")
 

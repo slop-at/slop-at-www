@@ -84,7 +84,12 @@ Hover over an entity to see its label and confidence score.
 ## Configuration
 
 Environment variables:
+- `SLOP_HOME` - Base directory for data (default: ~/.slop-at)
 - `OXIGRAPH_URL` - Oxigraph server URL (default: http://localhost:7878)
+
+Data is stored in:
+- `~/.slop-at/slops/` - Rendered slop JSON files
+- `~/.slop-at/oxigraph/` - RDF graph database
 
 ## Integration with slopnet-mcp
 
