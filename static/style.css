@@ -65,7 +65,9 @@ h1 {
     color: var(--text-secondary);
     opacity: 0.4;
     margin-bottom: 2rem;
-    padding: 0.5rem 0;
+    padding: 0.75rem 1rem;
+    background: #ffffff;
+    border-bottom: 1px solid #e5e5e5;
 }
 
 .frontmatter pre {
