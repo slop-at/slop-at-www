@@ -23,14 +23,20 @@ Dead simple:
 # Install dependencies
 uv sync
 
-# Start Oxigraph (in separate terminal)
-uvx oxigraph serve --location ./data
+# Start everything (web server + Oxigraph)
+./start.sh
 
-# Start web server
-uv run python server.py
+# Or manually in separate terminals:
+# Terminal 1: uvx oxigraph serve --location ./data
+# Terminal 2: uv run python server.py
 ```
 
 Server runs on http://localhost:8080
+
+To stop:
+```bash
+./stop.sh
+```
 
 ## Usage
 
