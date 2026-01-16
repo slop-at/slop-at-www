@@ -1,0 +1,19 @@
+[project]
+name = "slop-at-www"
+version = "0.1.0"
+requires-python = ">=3.12"
+description = "Minimal web server for slop.at - beautiful markdown with entity highlighting"
+dependencies = [
+    "fastapi",
+    "uvicorn[standard]",
+    "httpx",
+    "mistune>=3.0.0",
+    "python-multipart",
+]
+
+[project.scripts]
+slop-www = "server:main"
+
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
