@@ -178,11 +178,38 @@ async def view_slop(slop_hash: str):
 
     title = metadata.get("title", "Untitled Slop")
 
+    # Strip frontmatter from markdown for display
+    content_without_frontmatter = markdown
+    if markdown.startswith("---"):
+        parts = markdown.split("---", 2)
+        if len(parts) >= 3:
+            content_without_frontmatter = parts[2].strip()
+
     # Highlight entities in markdown before rendering
-    highlighted_markdown = highlight_entities(markdown, entities)
+    highlighted_markdown = highlight_entities(content_without_frontmatter, entities)
 
     # Render to HTML
     content_html = render_markdown(highlighted_markdown)
+
+    # Build metadata footer
+    author = metadata.get("author", "unknown")
+    created = metadata.get("created", "")
+    tags = metadata.get("tags", [])
+    slop_id = metadata.get("slop_id", "")
+    familiar = metadata.get("familiar", "")
+
+    metadata_html = f"""
+        <div class="metadata">
+            <hr>
+            <dl>
+                {f'<dt>author</dt><dd>{author}</dd>' if author else ''}
+                {f'<dt>created</dt><dd>{created}</dd>' if created else ''}
+                {f'<dt>tags</dt><dd>{", ".join(tags)}</dd>' if tags else ''}
+                {f'<dt>slop_id</dt><dd>{slop_id}</dd>' if slop_id else ''}
+                {f'<dt>familiar</dt><dd>{familiar}</dd>' if familiar else ''}
+            </dl>
+        </div>
+    """
 
     return HTMLResponse(content=f"""
 <!DOCTYPE html>
@@ -198,6 +225,7 @@ async def view_slop(slop_hash: str):
         <article class="slop">
             {content_html}
         </article>
+        {metadata_html}
         <footer>
             <a href="/">← back to slop.at</a>
         </footer>
