@@ -3,7 +3,6 @@
 * {
     margin: 0;
     padding: 0;
-    box-sizing: border-box;
 }
 
 :root {
@@ -18,20 +17,27 @@
     --entity-event: #10b981;
     --entity-topic: #f59e0b;
     --entity-definedterm: #ec4899;
+    --entity-activity: #0891b2;
+    --entity-company: #6366f1;
+    --entity-meeting: #06b6d4;
+    --entity-conference: #a855f7;
+    --entity-family: #db2777;
+    --entity-community: #65a30d;
     --entity-default: #fbbf24;
 }
 
 body {
-    font-family: 'American Typewriter', 'Courier New', monospace;
+    font-family: "American Typewriter", "Courier New", monospace;
     line-height: 1.6;
     color: var(--text);
     background: var(--bg);
-    padding: 2rem 1rem;
+    padding: 0;
 }
 
 .container {
     max-width: 720px;
     margin: 0 auto;
+    padding: 0 1rem;
 }
 
 /* Landing page */
@@ -59,15 +65,15 @@ h1 {
     margin: 0;
 }
 
-/* Tone down YAML frontmatter */
+/* YAML frontmatter at bottom */
 .frontmatter {
-    font-size: 0.65rem;
+    margin-top: 2rem;
+    padding-top: 1rem;
+    padding-bottom: 1rem;
+    border-top: 1px solid #e5e5e5;
+    font-size: 0.95rem;
     color: var(--text-secondary);
-    opacity: 0.4;
-    margin: 0 0 1rem 0;
-    padding: 0;
-    background: #ffffff !important;
-    border-bottom: 1px solid #e5e5e5;
+    opacity: 0.5;
 }
 
 .frontmatter pre {
@@ -75,14 +81,14 @@ h1 {
     padding: 0;
     background: #ffffff !important;
     border: none;
-    font-family: 'Courier New', monospace;
-    font-size: 0.65rem;
-    line-height: 1.3;
+    font-family: "Courier New", monospace;
+    font-size: inherit;
+    line-height: 1.4;
 }
 
 .slop h1 {
     font-size: 2.5rem;
-    margin-bottom: 1.5rem;
+    margin: 0.5rem 0 1.5rem 0;
     line-height: 1.2;
 }
 
@@ -105,7 +111,8 @@ h1 {
     font-size: 1.0625rem;
 }
 
-.slop ul, .slop ol {
+.slop ul,
+.slop ol {
     margin-bottom: 1.5rem;
     padding-left: 2rem;
 }
@@ -127,7 +134,7 @@ h1 {
     padding: 0.2em 0.4em;
     border-radius: 3px;
     font-size: 0.9em;
-    font-family: 'SF Mono', Consolas, 'Liberation Mono', Menlo, monospace;
+    font-family: "SF Mono", Consolas, "Liberation Mono", Menlo, monospace;
 }
 
 .slop pre {
@@ -157,11 +164,11 @@ h1 {
 
 /* Entity highlighting */
 mark.entity {
-    background: transparent;
+    background: var(--entity-default);
+    color: white;
     padding: 0.1em 0.2em;
     border-radius: 2px;
     cursor: help;
-    transition: opacity 0.2s ease;
 }
 
 mark.entity-person {
@@ -191,6 +198,36 @@ mark.entity-topic {
 
 mark.entity-definedterm {
     background: var(--entity-definedterm);
+    color: white;
+}
+
+mark.entity-activity {
+    background: var(--entity-activity);
+    color: white;
+}
+
+mark.entity-company {
+    background: var(--entity-company);
+    color: white;
+}
+
+mark.entity-meeting {
+    background: var(--entity-meeting);
+    color: white;
+}
+
+mark.entity-conference {
+    background: var(--entity-conference);
+    color: white;
+}
+
+mark.entity-family {
+    background: var(--entity-family);
+    color: white;
+}
+
+mark.entity-community {
+    background: var(--entity-community);
     color: white;
 }
 

@@ -9,6 +9,9 @@ from typing import Optional
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import HTMLResponse, FileResponse
 from fastapi.staticfiles import StaticFiles
+from slowapi import Limiter
+from slowapi.util import get_remote_address
+from slowapi.errors import RateLimitExceeded
 import mistune
 import os
 
@@ -18,7 +21,16 @@ SLOP_HOME = Path(os.getenv("SLOP_HOME", Path.home() / ".slop-at"))
 DATA_DIR = SLOP_HOME / "slops"
 DATA_DIR.mkdir(parents=True, exist_ok=True)
 
+# Security settings
+MAX_SLOP_SIZE = int(os.getenv("MAX_SLOP_SIZE", "1000000"))  # 1MB default
+
 app = FastAPI(title="slop.at")
+
+# Rate limiting
+limiter = Limiter(key_func=get_remote_address)
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, lambda request, exc:
+    HTTPException(status_code=429, detail="Too many requests"))
 
 # Serve static files
 static_dir = Path("./static")
@@ -31,48 +43,90 @@ def generate_hash(content: str) -> str:
     return hashlib.md5(content.encode()).hexdigest()[:8]
 
 
-def highlight_entities(markdown: str, entities: list) -> str:
+def highlight_entities_in_html(html: str, entities: list) -> str:
     """
-    Highlight entities in markdown text with opacity based on confidence
+    Highlight entities in rendered HTML using BeautifulSoup to properly handle text nodes
 
     Entities should be in format:
-    [{"text": "Alice", "label": "Person", "start": 0, "end": 5, "score": 0.95}, ...]
+    [{"text": "Alice", "label": "Person", "score": 0.95}, ...]
     """
     if not entities:
-        return markdown
+        return html
 
-    # Sort entities by start position (reverse) to avoid offset issues
-    sorted_entities = sorted(entities, key=lambda e: e.get("start", 0), reverse=True)
+    from bs4 import BeautifulSoup, NavigableString
+    import re
 
-    result = markdown
+    # Build a unique list of entities (text -> best scoring entity)
+    entity_map = {}
+    for entity in entities:
+        text = entity.get("text", "").strip()
+        if not text:
+            continue
+        # Keep highest confidence for each text
+        if text not in entity_map or entity.get("score", 0) > entity_map[text].get("score", 0):
+            entity_map[text] = entity
+
+    # Sort by length (longest first) to avoid partial replacements
+    sorted_entities = sorted(entity_map.values(), key=lambda e: len(e.get("text", "")), reverse=True)
+
+    # Parse HTML with BeautifulSoup
+    soup = BeautifulSoup(html, 'html.parser')
+
+    # Process each entity
     for entity in sorted_entities:
         text = entity.get("text", "")
         label = entity.get("label", "unknown")
         score = entity.get("score", 0.5)
-        start = entity.get("start", 0)
-        end = entity.get("end", start + len(text))
 
-        # Map confidence to opacity: 0.9+ = 1.0, 0.7-0.9 = 0.7, <0.7 = 0.4
-        if score >= 0.9:
-            opacity = 1.0
-        elif score >= 0.7:
-            opacity = 0.7
-        else:
-            opacity = 0.4
+        # Show all entities at full visibility
+        # Confidence score still available in tooltip
 
-        # Create highlighted span
-        highlighted = f'<mark class="entity entity-{label.lower()}" style="opacity: {opacity}" title="{label}: {score:.2f}">{text}</mark>'
+        # Find all text nodes that contain this entity text
+        # Use case-insensitive search with word boundaries
+        pattern = re.compile(r'\b' + re.escape(text) + r'\b', re.IGNORECASE)
 
-        # Replace in text
-        result = result[:start] + highlighted + result[end:]
+        # Walk all text nodes
+        for text_node in soup.find_all(string=True):
+            # Skip if already inside a mark tag
+            if text_node.parent.name == 'mark':
+                continue
 
-    return result
+            # Check if this text node contains our entity
+            if pattern.search(str(text_node)):
+                # Split and wrap matches
+                new_content = []
+                last_end = 0
+
+                for match in pattern.finditer(str(text_node)):
+                    # Add text before match
+                    if match.start() > last_end:
+                        new_content.append(str(text_node)[last_end:match.start()])
+
+                    # Create mark tag for matched text
+                    mark_tag = soup.new_tag('mark')
+                    mark_tag['class'] = ['entity', f'entity-{label.lower()}']
+                    mark_tag['title'] = f'{label}: {score:.2f}'
+                    mark_tag.string = match.group(0)
+                    new_content.append(mark_tag)
+
+                    last_end = match.end()
+
+                # Add remaining text after last match
+                if last_end < len(str(text_node)):
+                    new_content.append(str(text_node)[last_end:])
+
+                # Replace the text node with new content
+                if new_content:
+                    text_node.replace_with(*new_content)
+
+    return str(soup)
+
 
 
 def render_markdown(content: str) -> str:
     """Render markdown to HTML"""
     md = mistune.create_markdown(
-        escape=False,
+        escape=False,  # Can't escape - we inject <mark> tags for entity highlighting
         plugins=['strikethrough', 'table', 'url', 'task_lists']
     )
     html = md(content)
@@ -87,7 +141,8 @@ def render_markdown(content: str) -> str:
             # Remove frontmatter from main content and re-render
             content_only = parts[2].strip()
             content_html = md(content_only)
-            return frontmatter_html + content_html
+            # Move frontmatter to bottom
+            return content_html + frontmatter_html
 
     return html
 
@@ -116,6 +171,7 @@ async def root():
 
 
 @app.post("/slop")
+@limiter.limit("20/minute")  # 20 slops per minute per IP
 async def post_slop(request: Request):
     """
     Receive markdown + nquads, render HTML, store in graph
@@ -137,10 +193,17 @@ async def post_slop(request: Request):
         if not markdown:
             raise HTTPException(status_code=400, detail="No markdown provided")
 
+        # Check content size
+        if len(markdown) > MAX_SLOP_SIZE:
+            raise HTTPException(
+                status_code=413,
+                detail=f"Slop too large (max {MAX_SLOP_SIZE} bytes)"
+            )
+
         # Generate hash from slop_id or content
         slop_id = metadata.get("slop_id")
         if slop_id:
-            slop_hash = slop_id[:8]
+            slop_hash = slop_id  # Already 8 chars from MCP
         else:
             slop_hash = generate_hash(markdown)
 
@@ -193,11 +256,11 @@ async def view_slop(slop_hash: str):
 
     title = metadata.get("title", "Untitled Slop")
 
-    # Highlight entities in markdown before rendering
-    highlighted_markdown = highlight_entities(markdown, entities)
+    # Render to HTML first
+    content_html = render_markdown(markdown)
 
-    # Render to HTML
-    content_html = render_markdown(highlighted_markdown)
+    # Then highlight entities in the HTML
+    content_html = highlight_entities_in_html(content_html, entities)
 
     return HTMLResponse(content=f"""
 <!DOCTYPE html>

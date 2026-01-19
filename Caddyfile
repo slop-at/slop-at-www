@@ -1,0 +1,9 @@
+# Production - automatic HTTPS
+slop.at {
+    reverse_proxy web:8080
+}
+
+# Development - HTTP only
+:8080 {
+    reverse_proxy web:8080
+}

@@ -9,6 +9,8 @@ dependencies = [
     "httpx",
     "mistune>=3.0.0",
     "python-multipart",
+    "beautifulsoup4",
+    "slowapi",
 ]
 
 [project.scripts]
@@ -17,3 +19,6 @@ slop-www = "server:main"
 [build-system]
 requires = ["setuptools", "wheel"]
 build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+py-modules = ["server"]

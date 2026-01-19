@@ -1,13 +1,18 @@
-# slop.at-www
+# slop.at
 
-Minimal web server for slop.at - beautiful markdown with entity highlighting.
+Minimal web server for beautiful markdown with entity highlighting.
 
-## Architecture
+## Stack
 
-Dead simple:
-- **POST /slop** - Receive markdown + nquads, render HTML, store in graph
-- **GET /s/{hash}** - View rendered slop with highlighted entities
-- **Oxigraph CLI** - Running separately for graph storage
+- **FastAPI** - Web server
+- **Oxigraph** - RDF graph database
+- **Caddy** - Automatic HTTPS
+- **Docker Compose** - One-command deploy
+
+## Endpoints
+
+- **POST /slop** - Receive markdown + entities + nquads
+- **GET /s/{id}** - View rendered slop with highlighted entities
 
 ## Features
 
@@ -17,25 +22,20 @@ Dead simple:
 ✨ Mobile responsive
 ✨ No JavaScript required
 
-## Setup
+## Deploy
+
+See [DEPLOY.md](DEPLOY.md) for production deployment to Digital Ocean.
+
+## Local Development
 
 ```bash
-# Install dependencies
+# Start with docker compose
+docker compose up
+
+# Or run manually:
 uv sync
-
-# Start everything (web server + Oxigraph)
-./start.sh
-
-# Or manually in separate terminals:
-# Terminal 1: uvx oxigraph serve --location ./data
-# Terminal 2: uv run python server.py
-```
-
-Server runs on http://localhost:8080
-
-To stop:
-```bash
-./stop.sh
+uvx oxigraph serve --location ./data &
+uv run uvicorn server:app --reload --port 8080
 ```
 
 ## Usage
