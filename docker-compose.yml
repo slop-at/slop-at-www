@@ -3,9 +3,11 @@ version: '3.8'
 services:
   oxigraph:
     image: ghcr.io/oxigraph/oxigraph:latest
-    command: serve --location /data
+    command: serve --location /data --bind 0.0.0.0:7878
     volumes:
       - oxigraph-data:/data
+    ports:
+      - "7878:7878"
     restart: unless-stopped
 
   web:
