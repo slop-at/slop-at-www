@@ -218,6 +218,7 @@ async def post_slop(request: Request):
 
         # Post N-Quads to Oxigraph
         if nquads:
+            print(f"DEBUG: Storing {len(nquads)} bytes of N-Quads to Oxigraph")
             async with httpx.AsyncClient() as client:
                 try:
                     response = await client.post(
@@ -227,8 +228,11 @@ async def post_slop(request: Request):
                         timeout=30.0
                     )
                     response.raise_for_status()
+                    print(f"DEBUG: Successfully stored in Oxigraph: {response.status_code}")
                 except Exception as e:
                     print(f"Warning: Failed to store in Oxigraph: {e}")
+        else:
+            print("DEBUG: No N-Quads provided, skipping Oxigraph storage")
 
         return {
             "status": "success",
